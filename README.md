@@ -6,3 +6,8 @@
 
 ## Software Requirements Specification
 [SRS: Lead Validation SaaS](https://docs.google.com/document/d/1jeapl-MtKdSMmBdhJ13JQ2KQ1zrYnm7gXLg8xeCNhLI/edit?tab=t.0)
+
+## Tech stack (backend)
+- Nodejs (Express with Javascript)
+- PostgreSQL (main db)
+- Redis
