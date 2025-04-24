@@ -8,6 +8,6 @@
 [SRS: Lead Validation SaaS](https://docs.google.com/document/d/1jeapl-MtKdSMmBdhJ13JQ2KQ1zrYnm7gXLg8xeCNhLI/edit?tab=t.0)
 
 ## Tech stack (backend)
-- Nodejs (Express with Javascript)
-- PostgreSQL (main db)
-- Redis
+- Nodejs v22 (Express with Javascript)
+- PostgreSQL v17 or v16 (main db)
+- Redis v7
