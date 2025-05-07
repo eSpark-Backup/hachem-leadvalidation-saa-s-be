@@ -1,6 +1,8 @@
 // config/database.js
 import pg from 'pg';
 import { logger } from '#utils';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const { Pool } = pg;
 

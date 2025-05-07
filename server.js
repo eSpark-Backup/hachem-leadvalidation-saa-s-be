@@ -1,6 +1,7 @@
 // server.js
 import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -11,7 +12,6 @@ import { authRoutes } from '#routes';
 import { setupSwagger } from '#middleware';
 
 // Load environment variables
-dotenv.config();
 
 // Create Express app
 const app = express();

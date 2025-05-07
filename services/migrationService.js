@@ -103,6 +103,7 @@ class MigrationService {
             // If client is provided, use it (we're in a transaction)
             // Otherwise, run the query directly
             if (client) {
+                logger.info(`Client found`)
                 // Execute migration
                 await client.query(migrationContent);
 
@@ -112,10 +113,14 @@ class MigrationService {
                     [migrationName, checksum]
                 );
             } else {
+                logger.info(`Client not found`)
+
                 // Use transaction to ensure both migration and record are atomic
                 await db.transaction(async (transactionClient) => {
+                    logger.info(`Running migration content`)
                     // Execute migration
                     await transactionClient.query(migrationContent);
+                    logger.info(`Ran migration content`)
 
                     // Record the migration
                     await transactionClient.query(
@@ -154,7 +159,9 @@ class MigrationService {
 
     // Run all pending migrations
     async runMigrations() {
+        let client = null;
         try {
+            client = await pool.connect()
             // Ensure migrations table exists
             await this.initMigrationsTable();
 
@@ -177,13 +184,17 @@ class MigrationService {
 
             // Run each pending migration in a separate transaction
             for (const migration of pendingMigrations) {
-                await this.runMigration(migration);
+                await this.runMigration(migration, client);
             }
 
             logger.info('All migrations applied successfully');
         } catch (err) {
             logger.error('Error running migrations', err);
             throw err;
+        } finally {
+            if (client){
+                client.release()
+            }
         }
     }
 

@@ -43,10 +43,11 @@ class AuthService {
             // Create the user
             const user = await User.create(userData);
 
+
             // Send verification email
             await this.emailService.sendVerificationEmail(
                 user.email,
-                user.verification_code,
+                userData.verification_code,
                 user.fullname.split(' ')[0]
             );
 

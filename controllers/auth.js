@@ -1,6 +1,7 @@
 // controllers/authController.js
 import { authService, googleAuthService } from '#services';
 import { logger } from '#utils';
+import crypto from "crypto";
 
 /**
  * @desc    Register a new user
@@ -26,13 +27,16 @@ export const register = async (req, res) => {
                 message: 'Invalid role. Must be either "client" or "supplier"'
             });
         }
+        // Generate verification code
+        const verificationCode = crypto.randomInt(100000, 999999).toString();
 
         const result = await authService.register({
             fullname,
             email,
             password,
             company,
-            role
+            role,
+            verification_code: verificationCode
         });
 
         if (!result.success) {

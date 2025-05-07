@@ -6,7 +6,7 @@ import argon2 from 'argon2';
 
 class User {
     // Create a new user
-    static async create({fullname, email, password, company = null, role}) {
+    static async create({fullname, email, password, company = null, role, verification_code: verificationCode}) {
         try {
             // Hash the password
             const passwordHash = await argon2.hash(password, {
@@ -16,8 +16,9 @@ class User {
                 parallelism: 1
             });
 
-            // Generate verification code
-            const verificationCode = crypto.randomInt(100000, 999999).toString();
+            logger.info(verificationCode)
+
+
             const verificationCodeExpires = new Date();
             verificationCodeExpires.setMinutes(verificationCodeExpires.getMinutes() + 15);
 
@@ -162,6 +163,7 @@ class User {
 
     // Verify user email
     static async verifyEmail(email, verificationCode) {
+        logger.info(verificationCode)
         try {
             const query = `
                 UPDATE users
