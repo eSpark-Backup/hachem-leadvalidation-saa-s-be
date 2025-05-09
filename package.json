@@ -1,0 +1,46 @@
+{
+  "name": "hachem-leadvalidationSaaS-be",
+  "version": "1.0.0",
+  "type": "module",
+  "imports": {
+    "#controllers": "./controllers/index.js",
+    "#controllers/*": "./controllers/*.js",
+    "#models": "./models/index.js",
+    "#models/*": "./models/*.js",
+    "#routes": "./routes/index.js",
+    "#routes/*": "./routes/*.js",
+    "#utils": "./utils/index.js",
+    "#utils/*": "./utils/*.js",
+    "#config": "./config/index.js",
+    "#config/*": "./config/*.js",
+    "#middleware": "./middlewares/index.js",
+    "#middleware/*": "./middlewares/*.js",
+    "#services": "./services/index.js",
+    "#services/*": "./services/*.js",
+    "#init": "./init/index.js",
+    "#init/*": "./init/*.js"
+  },
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "main": "index.js",
+  "repository": "https://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@github.com/eSpark-Consultants/hachem-leadvalidationSaaS-be",
+  "author": "<zulfiqarqureshi619@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "argon2": "^0.43.0",
+    "body-parser": "^2.2.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.1",
+    "pg": "^8.15.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0",
+    "yup": "^1.6.1"
+  }
+}
