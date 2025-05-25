@@ -10,12 +10,14 @@ import { logger } from '#utils';
 import { initializeDatabase } from '#init';
 import { authRoutes } from '#routes';
 import { setupSwagger } from '#middleware';
+import {runMigrations} from "#utils/migrate";
 
 // Load environment variables
 
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
+await runMigrations();
 
 // Security middleware
 app.use(helmet());
@@ -63,14 +65,6 @@ app.use((err, req, res, next) => {
 // Start server function
 async function startServer() {
     try {
-        // Initialize database and run migrations
-        // const dbInitialized = await initializeDatabase();
-        //
-        // if (!dbInitialized) {
-        //     logger.error('Failed to initialize database. Exiting...');
-        //     process.exit(1);
-        // }
-
         // Start Express server
         app.listen(PORT, () => {
             logger.info(`Server running on port ${PORT}`);
