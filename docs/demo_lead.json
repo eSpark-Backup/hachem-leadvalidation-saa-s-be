@@ -104,7 +104,7 @@
     {
       "phone": "invalid-phone",
       "email": "invalid-email",
-      "address": "",
+      "address": "demo addr",
       "type": "solar_panel",
       "roof_orientation": "north",
       "first_name": "Test",

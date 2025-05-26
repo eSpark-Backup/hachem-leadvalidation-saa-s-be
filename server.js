@@ -11,6 +11,7 @@ import { initializeDatabase } from '#init';
 import { authRoutes } from '#routes';
 import leadsRouter from '#routes/leads'
 import clientRouter from '#routes/client'
+import apiKeysRouter from '#routes/apiKeys'
 import { setupSwagger } from '#middleware';
 import {runMigrations} from "#utils/migrate";
 
@@ -52,6 +53,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadsRouter);
 app.use('/api/client', clientRouter);
+app.use('/api/api-keys', apiKeysRouter);
 
 // Setup Swagger documentation (only in dev/staging)
 setupSwagger(app);
