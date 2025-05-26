@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import { logger } from '#utils';
 import { initializeDatabase } from '#init';
 import { authRoutes } from '#routes';
+import router from '#routes/leads'
 import { setupSwagger } from '#middleware';
 import {runMigrations} from "#utils/migrate";
 
@@ -48,6 +49,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/leads', router);
 
 // Setup Swagger documentation (only in dev/staging)
 setupSwagger(app);
