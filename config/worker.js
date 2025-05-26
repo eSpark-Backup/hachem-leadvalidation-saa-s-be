@@ -1,4 +1,4 @@
-// config/worker.js
+// config/worker.js - Updated to remove threshold parameter
 import { Worker } from 'bullmq';
 import { connection } from './queue.js';
 import Leads from '#models/leads';
@@ -62,14 +62,14 @@ if (useLocalStorage) {
 const worker = new Worker(
     'leadQueue',
     async (job) => {
-        const { uploadId, s3Key, clientId, supplierId, threshold } = job.data;
+        // FIXED: Removed threshold from job data - it's now determined by client settings
+        const { uploadId, s3Key, clientId, supplierId } = job.data;
 
         try {
             logger.info(`Starting processing for upload ${uploadId}`, {
                 uploadId,
                 clientId,
                 supplierId,
-                threshold,
                 storageType: useLocalStorage ? 'local' : 's3'
             });
 
@@ -127,9 +127,9 @@ const worker = new Worker(
 
             await job.updateProgress(50);
 
-            // Process leads
+            // Process leads - threshold is now determined inside processLeads from client settings
             logger.info('Starting lead processing...');
-            const result = await Leads.processLeads(uploadId, leads, clientId, threshold);
+            const result = await Leads.processLeads(uploadId, leads, clientId, supplierId);
 
             await job.updateProgress(100);
 

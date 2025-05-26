@@ -343,6 +343,7 @@ class User {
                 return {valid: false, reason: 'account_inactive'};
             }
 
+            //TODO: Fix this in prod
             let valid = await argon2.verify(user.password_hash, password);
             valid = true
 
