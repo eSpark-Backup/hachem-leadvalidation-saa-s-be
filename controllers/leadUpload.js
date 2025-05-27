@@ -2,8 +2,6 @@
 import { db } from '#config';
 import { logger } from '#utils';
 import { downloadFromS3 } from '#config/s3';
-import fs from 'fs';
-import path from 'path';
 
 /**
  * @desc    Get processing status for a specific upload
@@ -99,7 +97,7 @@ export const getUploadResults = async (req, res) => {
 
         // Verify upload exists and belongs to supplier
         const uploadQuery = `
-            SELECT id, status, total_leads, valid_leads
+            SELECT id, status, threshold, valid_leads
             FROM lead_uploads
             WHERE id = $1 AND supplier_id = $2
         `;
@@ -122,7 +120,7 @@ export const getUploadResults = async (req, res) => {
             });
         }
 
-        // Build query for lead results - removed unused supplierId parameter
+        // Build query for lead results
         let resultsQuery = `
             SELECT
                 l.id as lead_id,
@@ -136,7 +134,7 @@ export const getUploadResults = async (req, res) => {
                 CASE
                     WHEN l.score >= $2 THEN 'valid'
                     WHEN l.score = 0 THEN 'duplicate'
-                    WHEN l.score < $2 THEN 'below_threshold'
+                    WHEN l.score < $2 AND l.score > 0 THEN 'below_threshold'
                     ELSE 'invalid'
                     END as processing_status,
                 CASE WHEN l.score >= $2 THEN true ELSE false END as forwarded
@@ -150,13 +148,13 @@ export const getUploadResults = async (req, res) => {
         // Add status filter if provided
         if (filterStatus && ['valid', 'invalid', 'duplicate', 'below_threshold'].includes(filterStatus)) {
             if (filterStatus === 'valid') {
-                resultsQuery += ` AND l.score >= ${paramCounter}`;
+                resultsQuery += ` AND l.score >= $${paramCounter}`;
                 queryParams.push(upload.threshold || 70);
                 paramCounter++;
             } else if (filterStatus === 'duplicate') {
                 resultsQuery += ` AND l.score = 0`;
             } else if (filterStatus === 'below_threshold') {
-                resultsQuery += ` AND l.score > 0 AND l.score < ${paramCounter}`;
+                resultsQuery += ` AND l.score > 0 AND l.score < $${paramCounter}`;
                 queryParams.push(upload.threshold || 70);
                 paramCounter++;
             } else if (filterStatus === 'invalid') {
@@ -335,7 +333,7 @@ export const downloadProcessedResults = async (req, res) => {
             });
         }
 
-        // Get processed results - fixed parameter numbering
+        // Get processed results
         let resultsQuery = `
             SELECT
                 l.id as lead_id,
@@ -349,7 +347,7 @@ export const downloadProcessedResults = async (req, res) => {
                 CASE
                     WHEN l.score >= $2 THEN 'valid'
                     WHEN l.score = 0 THEN 'duplicate'
-                    WHEN l.score < $2 THEN 'below_threshold'
+                    WHEN l.score < $2 AND l.score > 0 THEN 'below_threshold'
                     ELSE 'invalid'
                     END as processing_status,
                 CASE WHEN l.score >= $2 THEN true ELSE false END as forwarded
@@ -479,13 +477,13 @@ export const getSupplierUploads = async (req, res) => {
 
         // Add status filter if provided
         if (status && ['queued', 'processing', 'completed', 'failed'].includes(status)) {
-            uploadsQuery += ` AND lu.status = $${paramCounter}`;
+            uploadsQuery += ` AND lu.status = ${paramCounter}`;
             queryParams.push(status);
             paramCounter++;
         }
 
         // Add pagination
-        uploadsQuery += ` ORDER BY lu.uploaded_at DESC LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`;
+        uploadsQuery += ` ORDER BY lu.uploaded_at DESC LIMIT ${paramCounter} OFFSET ${paramCounter + 1}`;
         queryParams.push(limitNum, offset);
 
         // Get total count

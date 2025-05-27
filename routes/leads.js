@@ -1,4 +1,4 @@
-// routes/leads.js - Updated to use API key authentication for uploads only
+// routes/leads.js - Updated with proper Swagger documentation
 import { Router } from 'express';
 import { leadQueue } from '#config/queue';
 import { uploadToS3 } from '#config/s3';
@@ -10,6 +10,30 @@ import * as leadUploadController from '#controllers/leadUpload';
 import fs from 'fs';
 
 const router = Router();
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     supplierBearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT Bearer token for supplier authentication (dashboard access)
+ *     clientBearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT Bearer token for client authentication (dashboard access)
+ *     supplierApiKey:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: API Key
+ *       description: |
+ *         Supplier API Key for programmatic access.
+ *         Format: Bearer sk_your_api_key_here
+ *         Example: Bearer sk_1234567890abcdef
+ */
 
 /**
  * @swagger
@@ -46,7 +70,7 @@ const router = Router();
  *     tags:
  *       - Leads
  *     security:
- *       - apiKeyAuth: []
+ *       - supplierApiKey: []
  *     requestBody:
  *       required: true
  *       content:
@@ -110,10 +134,40 @@ const router = Router();
  *                     total_leads:
  *                       type: integer
  *                       example: 150
+ *                     api_key_used:
+ *                       type: string
+ *                       example: "Production API Key"
  *       400:
  *         description: Bad request - Invalid file, missing fields, or invalid JSON
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "File is required"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["No file uploaded"]
  *       401:
  *         description: Unauthorized - Invalid or missing API key
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid or missing API key"
  *       413:
  *         description: File too large
  *       415:
@@ -301,7 +355,6 @@ router.post('/upload',
 // Add multer error handling middleware
 router.use(handleMulterError);
 
-// All other routes use JWT authentication (for dashboard access)
 /**
  * @swagger
  * /api/leads/uploads:
@@ -313,7 +366,91 @@ router.use(handleMulterError);
  *     tags:
  *       - Leads
  *     security:
- *       - bearerAuth: []
+ *       - supplierBearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 20
+ *         description: Number of uploads per page
+ *         example: 20
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [queued, processing, completed, failed]
+ *         description: Filter uploads by status
+ *         example: completed
+ *     responses:
+ *       200:
+ *         description: Uploads retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     uploads:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           upload_id:
+ *                             type: string
+ *                             example: "123"
+ *                           client_id:
+ *                             type: string
+ *                             example: "456"
+ *                           client_name:
+ *                             type: string
+ *                             example: "John Smith"
+ *                           threshold:
+ *                             type: integer
+ *                             example: 70
+ *                           status:
+ *                             type: string
+ *                             example: "completed"
+ *                           uploaded_at:
+ *                             type: string
+ *                             format: date-time
+ *                           total_leads:
+ *                             type: integer
+ *                             example: 150
+ *                           valid_leads:
+ *                             type: integer
+ *                             example: 120
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         current_page:
+ *                           type: integer
+ *                           example: 1
+ *                         total_pages:
+ *                           type: integer
+ *                           example: 5
+ *                         total_uploads:
+ *                           type: integer
+ *                           example: 100
+ *       401:
+ *         description: Unauthorized - Invalid JWT token
+ *       500:
+ *         description: Internal server error
  */
 router.get('/uploads', authenticate, authorize(['supplier']), leadUploadController.getSupplierUploads);
 
@@ -328,7 +465,66 @@ router.get('/uploads', authenticate, authorize(['supplier']), leadUploadControll
  *     tags:
  *       - Leads
  *     security:
- *       - bearerAuth: []
+ *       - supplierBearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Upload ID from the database record
+ *         example: "12345"
+ *     responses:
+ *       200:
+ *         description: Processing status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     upload_id:
+ *                       type: string
+ *                       example: "12345"
+ *                     client_id:
+ *                       type: string
+ *                       example: "123"
+ *                     client_name:
+ *                       type: string
+ *                       example: "John Smith"
+ *                     status:
+ *                       type: string
+ *                       enum: [queued, processing, completed, failed]
+ *                       example: "completed"
+ *                     total_leads:
+ *                       type: integer
+ *                       example: 150
+ *                     processed_leads:
+ *                       type: integer
+ *                       example: 150
+ *                     valid_leads:
+ *                       type: integer
+ *                       example: 120
+ *                     uploaded_at:
+ *                       type: string
+ *                       format: date-time
+ *                     completed_at:
+ *                       type: string
+ *                       format: date-time
+ *                     error_message:
+ *                       type: string
+ *                       nullable: true
+ *       401:
+ *         description: Unauthorized - Invalid JWT token
+ *       404:
+ *         description: Upload not found or access denied
+ *       500:
+ *         description: Internal server error
  */
 router.get('/status/:uploadId', authenticate, authorize(['supplier']), leadUploadController.getUploadStatus);
 
@@ -340,10 +536,146 @@ router.get('/status/:uploadId', authenticate, authorize(['supplier']), leadUploa
  *     description: |
  *       Get comprehensive processing results for a completed upload.
  *       Uses JWT authentication for dashboard access.
+ *
+ *       **Lead Scoring System (0-100 points):**
+ *       - All required fields present: +20 points
+ *       - Valid phone format: +30 points
+ *       - Not a duplicate: +20 points
+ *       - Passes type-specific validation: +30 points
  *     tags:
  *       - Leads
  *     security:
- *       - bearerAuth: []
+ *       - supplierBearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Upload ID from the database record
+ *         example: "12345"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination of results
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *         description: Number of results per page
+ *         example: 50
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [valid, invalid, duplicate, below_threshold]
+ *         description: Filter results by lead processing status
+ *         example: valid
+ *     responses:
+ *       200:
+ *         description: Processing results retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     upload_id:
+ *                       type: string
+ *                       example: "12345"
+ *                     summary:
+ *                       type: object
+ *                       properties:
+ *                         total_submitted:
+ *                           type: integer
+ *                           example: 150
+ *                         valid:
+ *                           type: integer
+ *                           example: 120
+ *                         invalid:
+ *                           type: integer
+ *                           example: 15
+ *                         duplicates:
+ *                           type: integer
+ *                           example: 10
+ *                         below_threshold:
+ *                           type: integer
+ *                           example: 5
+ *                         forwarded_to_client:
+ *                           type: integer
+ *                           example: 85
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           lead_id:
+ *                             type: string
+ *                             example: "lead_001"
+ *                           status:
+ *                             type: string
+ *                             enum: [valid, invalid, duplicate, below_threshold]
+ *                             example: "valid"
+ *                           score:
+ *                             type: integer
+ *                             minimum: 0
+ *                             maximum: 100
+ *                             example: 85
+ *                           forwarded:
+ *                             type: boolean
+ *                             example: true
+ *                           errors:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                             example: []
+ *                           warnings:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                             example: []
+ *                           original_data:
+ *                             type: object
+ *                             example:
+ *                               phone: "+33123456789"
+ *                               email: "john@example.com"
+ *                               address: "123 Main St, Paris, 75001"
+ *                               type: "solar_panel"
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         current_page:
+ *                           type: integer
+ *                           example: 1
+ *                         total_pages:
+ *                           type: integer
+ *                           example: 3
+ *                         total_results:
+ *                           type: integer
+ *                           example: 150
+ *                         per_page:
+ *                           type: integer
+ *                           example: 50
+ *       400:
+ *         description: Processing not yet completed
+ *       401:
+ *         description: Unauthorized - Invalid JWT token
+ *       404:
+ *         description: Upload not found or access denied
+ *       500:
+ *         description: Internal server error
  */
 router.get('/results/:uploadId', authenticate, authorize(['supplier']), leadUploadController.getUploadResults);
 
@@ -358,13 +690,41 @@ router.get('/results/:uploadId', authenticate, authorize(['supplier']), leadUplo
  *     tags:
  *       - Leads
  *     security:
- *       - bearerAuth: []
+ *       - supplierBearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Upload ID from the database record
+ *         example: "12345"
+ *     responses:
+ *       200:
+ *         description: File downloaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               description: Original uploaded JSON file content
+ *         headers:
+ *           Content-Disposition:
+ *             description: Attachment filename
+ *             schema:
+ *               type: string
+ *               example: 'attachment; filename="leads_upload_12345_2025-05-27.json"'
+ *       401:
+ *         description: Unauthorized - Invalid JWT token
+ *       404:
+ *         description: Upload not found or access denied
+ *       500:
+ *         description: Internal server error
  */
 router.get('/download/:uploadId', authenticate, authorize(['supplier']), leadUploadController.downloadUploadedFile);
 
 /**
  * @swagger
- * /api/leads/download-results/:uploadId:
+ * /api/leads/download-results/{uploadId}:
  *   get:
  *     summary: Download processed leads results
  *     description: |
@@ -373,7 +733,73 @@ router.get('/download/:uploadId', authenticate, authorize(['supplier']), leadUpl
  *     tags:
  *       - Leads
  *     security:
- *       - bearerAuth: []
+ *       - supplierBearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Upload ID from the database record
+ *         example: "12345"
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [json, csv]
+ *           default: json
+ *         description: Download format (JSON or CSV)
+ *         example: json
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [valid, invalid, duplicate, below_threshold]
+ *         description: Filter results by lead processing status
+ *         example: valid
+ *     responses:
+ *       200:
+ *         description: Results downloaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               description: Processed results in JSON format
+ *               properties:
+ *                 upload_id:
+ *                   type: string
+ *                   example: "12345"
+ *                 processed_at:
+ *                   type: string
+ *                   format: date-time
+ *                 total_results:
+ *                   type: integer
+ *                   example: 150
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *               description: Processed results in CSV format
+ *               example: |
+ *                 "lead_id","status","score","forwarded","phone","email","address","type","processed_at"
+ *                 "1","valid","95","true","+33123456789","john@example.com","123 Main St","solar_panel","2025-05-27T10:30:00Z"
+ *         headers:
+ *           Content-Disposition:
+ *             description: Attachment filename
+ *             schema:
+ *               type: string
+ *               example: 'attachment; filename="processed_leads_12345_2025-05-27.json"'
+ *       400:
+ *         description: Processing not yet completed
+ *       401:
+ *         description: Unauthorized - Invalid JWT token
+ *       404:
+ *         description: Upload not found or access denied
+ *       500:
+ *         description: Internal server error
  */
 router.get('/download-results/:uploadId', authenticate, authorize(['supplier']), leadUploadController.downloadProcessedResults);
 
@@ -383,12 +809,79 @@ router.get('/download-results/:uploadId', authenticate, authorize(['supplier']),
  *   get:
  *     summary: Get supplier performance statistics
  *     description: |
- *       Get comprehensive statistics for the current supplier.
+ *       Get comprehensive statistics for the current supplier including success rates,
+ *       lead validation metrics, and performance over time.
  *       Uses JWT authentication for dashboard access.
  *     tags:
  *       - Leads
  *     security:
- *       - bearerAuth: []
+ *       - supplierBearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 365
+ *           default: 30
+ *         description: Number of days to include in statistics
+ *         example: 30
+ *     responses:
+ *       200:
+ *         description: Statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total_uploads:
+ *                       type: integer
+ *                       description: Total number of uploads in the period
+ *                       example: 25
+ *                     completed_uploads:
+ *                       type: integer
+ *                       description: Number of successfully completed uploads
+ *                       example: 23
+ *                     failed_uploads:
+ *                       type: integer
+ *                       description: Number of failed uploads
+ *                       example: 1
+ *                     pending_uploads:
+ *                       type: integer
+ *                       description: Number of uploads still processing or queued
+ *                       example: 1
+ *                     total_leads_uploaded:
+ *                       type: integer
+ *                       description: Total leads uploaded across all uploads
+ *                       example: 2500
+ *                     total_valid_leads:
+ *                       type: integer
+ *                       description: Total leads that passed validation
+ *                       example: 2100
+ *                     success_rate:
+ *                       type: number
+ *                       format: float
+ *                       description: Upload success rate as percentage
+ *                       example: 92.0
+ *                     valid_lead_rate:
+ *                       type: number
+ *                       format: float
+ *                       description: Lead validation rate as percentage
+ *                       example: 84.0
+ *                     period_days:
+ *                       type: integer
+ *                       description: Number of days covered by the statistics
+ *                       example: 30
+ *       401:
+ *         description: Unauthorized - Invalid JWT token
+ *       500:
+ *         description: Internal server error
  */
 router.get('/supplier-stats', authenticate, authorize(['supplier']), async (req, res) => {
     try {

@@ -22,15 +22,6 @@ const swaggerOptions = {
                 description: 'API server'
             }
         ],
-        components: {
-            securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT'
-                }
-            }
-        },
         tags: [
             {
                 name: 'Authentication',
