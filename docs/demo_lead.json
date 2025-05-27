@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "supplier": "Premium Lead Generation",
+    "campaign": "Q1 2025 Solar Campaign",
+    "source": "Facebook Ads",
+    "generated_at": "2025-01-26T10:00:00Z"
+  },
+  "leads": [
+    {
+      "phone": "+33123456789",
+      "email": "pierre.martin@email.com",
+      "address": "15 Rue de la Paix, Paris, 75001, France",
+      "type": "solar_panel",
+      "roof_orientation": "south",
+      "first_name": "Pierre",
+      "last_name": "Martin",
+      "home_age": 12,
+      "roof_size": "120 sqm",
+      "energy_bill": "€180/month",
+      "contact_preference": "email"
+    },
+    {
+      "phone": "+33987654321",
+      "email": "marie.dubois@gmail.com",
+      "address": "42 Avenue des Champs, Lyon, 69001, France",
+      "type": "insulation",
+      "home_age": 25,
+      "first_name": "Marie",
+      "last_name": "Dubois",
+      "property_type": "house",
+      "heating_type": "gas",
+      "current_insulation": "minimal",
+      "contact_preference": "phone"
+    },
+    {
+      "phone": "+33555123456",
+      "email": "jean.leclerc@outlook.com",
+      "address": "8 Place de la République, Marseille, 13001, France",
+      "type": "ev_charger",
+      "garage": true,
+      "parking": false,
+      "first_name": "Jean",
+      "last_name": "Leclerc",
+      "car_model": "Tesla Model 3",
+      "installation_timeline": "within_3_months",
+      "contact_preference": "phone"
+    },
+    {
+      "phone": "+33777888999",
+      "email": "sophie.bernard@yahoo.fr",
+      "address": "23 Rue Victor Hugo, Nice, 06000, France",
+      "type": "insurance",
+      "zip": "06000",
+      "city": "Nice",
+      "first_name": "Sophie",
+      "last_name": "Bernard",
+      "age": 34,
+      "property_value": "€450000",
+      "current_provider": "AXA",
+      "contact_preference": "email"
+    },
+    {
+      "phone": "+33444555666",
+      "email": "lucas.moreau@free.fr",
+      "address": "67 Boulevard Saint-Germain, Toulouse, 31000, France",
+      "type": "solar_panel",
+      "roof_orientation": "southeast",
+      "first_name": "Lucas",
+      "last_name": "Moreau",
+      "home_age": 8,
+      "roof_size": "95 sqm",
+      "energy_bill": "€220/month",
+      "urgency": "high",
+      "contact_preference": "phone"
+    },
+    {
+      "phone": "+33111222333",
+      "email": "claire.petit@gmail.com",
+      "address": "156 Rue de Rivoli, Bordeaux, 33000, France",
+      "type": "insulation",
+      "home_age": 18,
+      "first_name": "Claire",
+      "last_name": "Petit",
+      "property_type": "apartment",
+      "heating_type": "electric",
+      "current_insulation": "poor",
+      "budget": "€8000-€12000",
+      "contact_preference": "email"
+    },
+    {
+      "phone": "+33666777888",
+      "email": "antoine.roux@hotmail.com",
+      "address": "89 Avenue de la Liberté, Lille, 59000, France",
+      "type": "ev_charger",
+      "garage": false,
+      "parking": true,
+      "first_name": "Antoine",
+      "last_name": "Roux",
+      "car_model": "Renault Zoe",
+      "installation_timeline": "within_6_months",
+      "home_type": "apartment",
+      "contact_preference": "phone"
+    },
+    {
+      "phone": "invalid-phone",
+      "email": "invalid-email",
+      "address": "demo addr",
+      "type": "solar_panel",
+      "roof_orientation": "north",
+      "first_name": "Test",
+      "last_name": "Invalid",
+      "note": "This lead should fail validation"
+    },
+    {
+      "phone": "+33999888777",
+      "email": "duplicate@test.com",
+      "address": "Test Address, Test City, 12345, France",
+      "type": "solar_panel",
+      "roof_orientation": "south",
+      "first_name": "Duplicate",
+      "last_name": "Test",
+      "note": "This might be flagged as duplicate if uploaded twice"
+    },
+    {
+      "phone": "+33123999888",
+      "email": "low.score@test.com",
+      "address": "Another Test Address, Test City, 54321, France",
+      "type": "insulation",
+      "home_age": 5,
+      "first_name": "Low",
+      "last_name": "Score",
+      "note": "This lead should get a low score due to home age < 15"
+    }
+  ]
+}

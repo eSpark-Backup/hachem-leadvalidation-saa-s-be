@@ -9,13 +9,20 @@ import helmet from 'helmet';
 import { logger } from '#utils';
 import { initializeDatabase } from '#init';
 import { authRoutes } from '#routes';
+import leadsRouter from '#routes/leads'
+import clientRouter from '#routes/client'
+import apiKeysRouter from '#routes/apiKeys'
 import { setupSwagger } from '#middleware';
+import {runMigrations} from "#utils/migrate";
+import {testConnection} from "#config";
 
 // Load environment variables
 
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
+await testConnection();
+await runMigrations();
 
 // Security middleware
 app.use(helmet());
@@ -46,6 +53,9 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/leads', leadsRouter);
+app.use('/api/client', clientRouter);
+app.use('/api/api-keys', apiKeysRouter);
 
 // Setup Swagger documentation (only in dev/staging)
 setupSwagger(app);
@@ -63,14 +73,6 @@ app.use((err, req, res, next) => {
 // Start server function
 async function startServer() {
     try {
-        // Initialize database and run migrations
-        // const dbInitialized = await initializeDatabase();
-        //
-        // if (!dbInitialized) {
-        //     logger.error('Failed to initialize database. Exiting...');
-        //     process.exit(1);
-        // }
-
         // Start Express server
         app.listen(PORT, () => {
             logger.info(`Server running on port ${PORT}`);

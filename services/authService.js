@@ -19,7 +19,7 @@ class AuthService {
         };
 
         const options = {
-            expiresIn: process.env.JWT_ACCESS_EXPIRY || '15m'
+            expiresIn: process.env.JWT_ACCESS_EXPIRY || '2d'
         };
 
         return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, options);

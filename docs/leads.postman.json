@@ -1,0 +1,382 @@
+{
+  "info": {
+    "name": "Lead Validation SaaS API",
+    "description": "Complete API collection for testing Lead Validation SaaS platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "supplierToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "uploadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login Client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('clientToken', response.tokens.accessToken);",
+                  "    pm.collectionVariables.set('clientId', response.user.id.toString());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.smith@greenenergy.com\",\n  \"password\": \"ClientPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Supplier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('supplierToken', response.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sarah.johnson@leadgen.com\",\n  \"password\": \"SupplierPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lead Management",
+      "item": [
+        {
+          "name": "Upload Leads",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('uploadId', response.data.upload_id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "demo_leads.json",
+                  "description": "Upload the demo JSON file created earlier"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{clientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "threshold",
+                  "value": "75",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Get All Uploads",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/uploads?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "uploads"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Upload Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/status/{{uploadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "status", "{{uploadId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Processing Results",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/results/{{uploadId}}?page=1&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "results", "{{uploadId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Valid Results Only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/results/{{uploadId}}?status=valid",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "results", "{{uploadId}}"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "valid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Downloads",
+      "item": [
+        {
+          "name": "Download Original File",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/download/{{uploadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "download", "{{uploadId}}"]
+            }
+          }
+        },
+        {
+          "name": "Download Results JSON",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/download-results/{{uploadId}}?format=json",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "download-results", "{{uploadId}}"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download Results CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/download-results/{{uploadId}}?format=csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "download-results", "{{uploadId}}"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "csv"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download Valid Results CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{supplierToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leads/download-results/{{uploadId}}?format=csv&status=valid",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leads", "download-results", "{{uploadId}}"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "csv"
+                },
+                {
+                  "key": "status",
+                  "value": "valid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api-docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

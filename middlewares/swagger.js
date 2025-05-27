@@ -40,10 +40,6 @@ const swaggerOptions = {
                 name: 'Leads',
                 description: 'Lead management endpoints'
             },
-            {
-                name: 'Users',
-                description: 'User management endpoints'
-            }
         ]
     },
     apis: [

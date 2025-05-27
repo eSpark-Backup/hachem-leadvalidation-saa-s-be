@@ -21,26 +21,64 @@
     "#init/*": "./init/*.js"
   },
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "dev:full": "concurrently \"cross-env NODE_ENV=development nodemon server.js\" \"cross-env NODE_ENV=development nodemon config/worker.js\"",
+    "start": "cross-env NODE_ENV=production node server.js",
+    "start:full": "concurrently \"cross-env NODE_ENV=production node server.js\" \"cross-env NODE_ENV=production node config/worker.js\""
   },
   "main": "index.js",
   "repository": "https://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@github.com/eSpark-Consultants/hachem-leadvalidationSaaS-be",
   "author": "<zulfiqarqureshi619@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.817.0",
     "argon2": "^0.43.0",
+    "aws-sdk": "^2.1692.0",
     "body-parser": "^2.2.0",
+    "bullmq": "^5.53.0",
+    "concurrently": "^9.1.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
     "nodemailer": "^6.10.1",
     "pg": "^8.15.6",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
     "yup": "^1.6.1"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "*.js",
+      "controllers/**/*.js",
+      "routes/**/*.js",
+      "services/**/*.js",
+      "models/**/*.js",
+      "middleware/**/*.js",
+      "config/**/*.js",
+      "utils/**/*.js",
+      "init/**/*.js"
+    ],
+    "ignore": [
+      "node_modules/**/*",
+      "uploads/**/*",
+      "storage/**/*",
+      "logs/**/*",
+      "temp/**/*",
+      "*.log",
+      "*.tmp",
+      "*.json",
+      "README.md",
+      ".env*",
+      ".git/**/*",
+      "migrations/**/*"
+    ],
+    "ext": "js,mjs",
+    "delay": 1000
   }
 }
