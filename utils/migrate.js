@@ -18,7 +18,8 @@ async function createPool() {
         password: process.env.DB_PASSWORD,
         port: process.env.DB_PORT,
         connectionTimeoutMillis: 10000, // 10 seconds
-        max: 1
+        max: 1,
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     });
 
     // Test the connection

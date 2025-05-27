@@ -14,12 +14,14 @@ import clientRouter from '#routes/client'
 import apiKeysRouter from '#routes/apiKeys'
 import { setupSwagger } from '#middleware';
 import {runMigrations} from "#utils/migrate";
+import {testConnection} from "#config";
 
 // Load environment variables
 
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
+await testConnection();
 await runMigrations();
 
 // Security middleware
