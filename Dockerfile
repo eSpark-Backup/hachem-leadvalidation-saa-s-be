@@ -1,20 +1,20 @@
-# Use the official Node.js 22 LTS image
+# Use the official Node.js 22 image
 FROM node:22-slim
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first to install dependencies
+# Copy dependency files first
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm install
 
-# Copy the rest of your application code
+# Copy the rest of the app
 COPY . .
 
-# Expose the port your app runs on (change if needed)
+# Expose the port (change 3000 if your app uses a different one)
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "index.js"]
+# Run the app
+CMD ["npm", "run", "dev:full"]
