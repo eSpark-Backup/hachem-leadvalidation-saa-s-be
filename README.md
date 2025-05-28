@@ -10,4 +10,4 @@
 ## Tech stack (backend)
 - Nodejs v22 (Express with Javascript)
 - PostgreSQL v17 or v16 (main db)
-- Redis v7 
+- Redis v7  
