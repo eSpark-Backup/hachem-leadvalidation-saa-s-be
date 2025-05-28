@@ -35,4 +35,4 @@ jobs:
           echo "Short SHA: ${GITHUB_SHA::5}"
       
       - name: Docker Build
-        run: docker build -t hachem-leadvalidationSaaS-be:stg-${GITHUB_SHA::5} -f Dockerfile .
+        run: docker build -t hachem-leadvalidationsaas-be:stg-${GITHUB_SHA::5} -f Dockerfile .
