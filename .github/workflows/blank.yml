@@ -32,5 +32,4 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Get Latest Pull 
         run: |
-          git pull,
-          echo current commit: ${{ github.sha }}.
+          echo "Short SHA: ${GITHUB_SHA::5}"
