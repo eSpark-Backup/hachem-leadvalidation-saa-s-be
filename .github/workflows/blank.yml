@@ -45,4 +45,5 @@ jobs:
           aws-region: us-east-1 
 
       - name: Run AWS CLI command
-        run: aws s3 ls
+        run: aws ecr create-repository --repository-name hachem-leadvalidationsaas-be --region us-east-1
+
