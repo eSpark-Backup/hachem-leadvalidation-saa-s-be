@@ -95,7 +95,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem github@54.234.173.111 << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
             cd /home/$USER/app
             docker compose down
             docker compose pull
