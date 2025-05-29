@@ -84,10 +84,7 @@ jobs:
           aws-region: us-east-1 
       - name: Download Key
         run: |
-            aws s3 cp s3://devops-key-github/key.pem.txt .
-            cp key.pem.txt key.pem
-            ls -al 
-            cat key.pem
+            aws s3 cp s3://devops-key-github/key.pem .
             chmod 600 key.pem
             
 
