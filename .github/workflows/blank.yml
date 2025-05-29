@@ -92,7 +92,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          scp -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
+          scp -o StrictHostKeyChecking=no -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
           cat tag.txt 
           IMAGE_TAG=$(sudo cat tag.txt)
