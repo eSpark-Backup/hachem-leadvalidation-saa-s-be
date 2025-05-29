@@ -93,10 +93,9 @@ jobs:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
-            cd /home/$USER/app
-            docker compose down
-            docker compose pull
-            docker compose up -d --build
+          cd /var/www/vhosts/hachem
+          sudo IMAGE_TAG=${IMAGE_TAG} docker compose up -d
+
           EOF
 
 
