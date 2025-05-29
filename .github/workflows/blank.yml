@@ -76,56 +76,13 @@ jobs:
           SHORT_SHA=${GITHUB_SHA::5}
           IMAGE_TAG="${BRANCH_NAME}-${SHORT_SHA}"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
-      - name: Write SSH key
-        run: |
-          cat << 'EOF' > deploy-key.pem
-          -----BEGIN OPENSSH PRIVATE KEY-----
-          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
-          -----END OPENSSH PRIVATE KEY-----
-          chmod 600 deploy-key.pem
-
+         
       - name: Deploy via SSH
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           cat deploy-key.pem
-          ssh -i deploy-key.pem -o StrictHostKeyChecking=no github@54.234.173.111 << EOF
+          sshpass -p "12345" ssh -o StrictHostKeyChecking=no github@54.234.173.111  << EOF
             touch test
             #sed -i "s|image: .*/hachem-leadvalidationsaas-be:.*|image: <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/hachem-leadvalidationsaas-be:${IMAGE_TAG}|" docker-compose.yml
             #docker-compose pull
