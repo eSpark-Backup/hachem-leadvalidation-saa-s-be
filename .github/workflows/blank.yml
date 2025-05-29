@@ -97,7 +97,7 @@ jobs:
           cat tag.txt 
           IMAGE_TAG=$(sudo cat tag.txt)
           cd /var/www/vhosts/hachem
-          sudo IMAGE_TAG=$IMAGE_TAG docker compose up -d
+          sudo $IMAGE_TAG docker compose up -d
 
           EOF
 
