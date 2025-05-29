@@ -86,15 +86,14 @@ jobs:
         run: |
             aws s3 cp s3://devops-key-github/key.pem .
             chmod 600 key.pem
-            
-
+    
       - name: Deploy via SSH
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
           cd /var/www/vhosts/hachem
-          sudo IMAGE_TAG=${IMAGE_TAG} docker compose up -d
+          sudo IMAGE_TAG=$IMAGE_TAG docker compose up -d
 
           EOF
 
