@@ -94,11 +94,11 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          sshpass -p "12345" ssh -o StrictHostKeyChecking=no github@54.234.173.111  << EOF
-            touch test
-            #sed -i "s|image: .*/hachem-leadvalidationsaas-be:.*|image: <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/hachem-leadvalidationsaas-be:${IMAGE_TAG}|" docker-compose.yml
-            #docker-compose pull
-            #docker-compose up -d
+          ssh -o StrictHostKeyChecking=no -i key.pem github@54.234.173.111 << 'EOF'
+            cd /home/$USER/app
+            docker compose down
+            docker compose pull
+            docker compose up -d --build
           EOF
 
 
