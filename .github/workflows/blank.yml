@@ -93,7 +93,7 @@ jobs:
           scp -o StrictHostKeyChecking=no -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
           sed -i 's/^IMAGE_TAG=//' tag.txt
-          sudo cat > ~/.aws/credentials <<EOF
+          sudo tee /root/.aws/credentials > /dev/null <<EOF
           [default]
           aws_access_key_id = AKIAXW5OGZH2ACFVO75S
           aws_secret_access_key = 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
