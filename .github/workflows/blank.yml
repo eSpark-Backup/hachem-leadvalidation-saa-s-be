@@ -84,9 +84,11 @@ jobs:
           aws-region: us-east-1 
       - name: Download Key
         run: |
-            aws s3 sync s3://devops-key-github/key.pem.txt .
+            aws s3 cp s3://devops-key-github/key.pem.txt key.pem
             ls -al 
-            #cat key.pem
+            cat key.pem
+            chmod 600 key.pem
+            
 
       - name: Deploy via SSH
         env:
