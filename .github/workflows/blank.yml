@@ -92,7 +92,7 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
-          sed 's/^IMAGE_TAG=//' tag.txt
+          sed -i 's/^IMAGE_TAG=//' tag.txt
           cat tag.txt 
           TAG=$(sudo cat tag.txt)
           cd /var/www/vhosts/hachem
