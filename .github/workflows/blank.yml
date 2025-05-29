@@ -84,7 +84,7 @@ jobs:
           aws-region: us-east-1 
       - name: Download Key
         run: |
-            aws s3 cp s3://devops-key-github/key.pem .
+            /usr/local/bin/aws s3 cp s3://devops-key-github/key.pem .
             chmod 600 key.pem
             cat tag.txt
     
@@ -93,16 +93,12 @@ jobs:
           scp -o StrictHostKeyChecking=no -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
           sed -i 's/^IMAGE_TAG=//' tag.txt
-          sudo tee /root/.aws/credentials > /dev/null <<EOF
-          [default]
-          aws_access_key_id = AKIAXW5OGZH2ACFVO75S
-          aws_secret_access_key = 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
-          EOF
+          /usr/local/bin/aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 530256939508.dkr.ecr.us-east-1.amazonaws.com
           ls -la
           cat tag.txt 
           TAG=$(sudo cat tag.txt)
-          sudo cd /var/www/vhosts/hachem && sudo IMAGE_TAG=$TAG docker compose up -d
-
+          cd /var/www/vhosts/hachem 
+          sudo IMAGE_TAG=$TAG docker compose up -d
           EOF
 
 
