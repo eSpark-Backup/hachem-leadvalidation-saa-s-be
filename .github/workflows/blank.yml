@@ -75,7 +75,7 @@ jobs:
           BRANCH_NAME=$(echo "${GITHUB_REF##*/}" | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=${GITHUB_SHA::5}
           IMAGE_TAG="${BRANCH_NAME}-${SHORT_SHA}"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$IMAGE_TAG" >> tag.txt
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -86,12 +86,16 @@ jobs:
         run: |
             aws s3 cp s3://devops-key-github/key.pem .
             chmod 600 key.pem
+            cat tag.txt
     
       - name: Deploy via SSH
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
+          scp -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
+          cat tag.txt 
+          IMAGE_TAG=$(sudo cat tag.txt)
           cd /var/www/vhosts/hachem
           sudo IMAGE_TAG=$IMAGE_TAG docker compose up -d
 
