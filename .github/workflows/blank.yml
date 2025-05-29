@@ -76,7 +76,12 @@ jobs:
           SHORT_SHA=${GITHUB_SHA::5}
           IMAGE_TAG="${BRANCH_NAME}-${SHORT_SHA}"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-         
+      - name: Download Key
+        run: |
+            aws s3 sync s3://devops-key-github/key.pem.txt key.pem
+            chmod 600 key.pem
+            cat key.pem
+
       - name: Deploy via SSH
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
