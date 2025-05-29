@@ -76,6 +76,12 @@ jobs:
           SHORT_SHA=${GITHUB_SHA::5}
           IMAGE_TAG="${BRANCH_NAME}-${SHORT_SHA}"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: AKIAXW5OGZH2ACFVO75S
+          aws-secret-access-key: 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
+          aws-region: us-east-1 
       - name: Download Key
         run: |
             aws s3 sync s3://devops-key-github/key.pem.txt key.pem
