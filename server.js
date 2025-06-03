@@ -12,6 +12,7 @@ import { authRoutes } from '#routes';
 import leadsRouter from '#routes/leads'
 import clientRouter from '#routes/client'
 import apiKeysRouter from '#routes/apiKeys'
+import clientApiKeysRoutes from '#routes/clientApiKeys'
 import { setupSwagger } from '#middleware';
 import {runMigrations} from "#utils/migrate";
 import {testConnection} from "#config";
@@ -48,7 +49,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'Server is healthy' });
+    res.status(200).json({
+        success: true,
+        message: 'Server is healthy',
+        environment: process.env.NODE_ENV
+    });
 });
 
 // API routes
@@ -56,6 +61,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadsRouter);
 app.use('/api/client', clientRouter);
 app.use('/api/api-keys', apiKeysRouter);
+app.use('/api/client/api-keys', clientApiKeysRoutes);
 
 // Setup Swagger documentation (only in dev/staging)
 setupSwagger(app);

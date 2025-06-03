@@ -1,0 +1,1372 @@
+openapi: 3.0.0
+info:
+  title: Lead Validation & Certification SaaS API
+  version: 1.0.0
+  description: |
+    Complete API documentation for Lead Validation & Certification SaaS Platform.
+    
+    ## Overview
+    This platform enables suppliers to upload lead data for validation and clients to access their validated leads.
+    
+    ## Authentication Methods
+    - **JWT Tokens**: For dashboard/web interface access
+    - **API Keys**: For programmatic access
+    
+    ## Key Features
+    - Lead validation and scoring (0-100 points)
+    - Duplicate detection within 30-day window
+    - Type-specific validation rules
+    - Real-time processing status
+    - Flexible threshold management
+
+  contact:
+    name: API Support
+    email: support@klairn.com
+
+servers:
+  - url: /
+    description: local server
+  - url: https://hachem-be-stg.esparkconsultants.com
+    description: hosted staging server
+
+components:
+  securitySchemes:
+    supplierBearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token for supplier dashboard access. Obtained from /api/auth/login endpoint.
+
+    clientBearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token for client dashboard access. Obtained from /api/auth/login endpoint.
+
+    supplierApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: |
+        Supplier API Key for programmatic lead uploads. 
+        Format: Bearer sk_your_64_character_key
+        Obtained from /api/api-keys endpoint.
+
+    clientApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: |
+        Client API Key for programmatic lead data access.
+        Format: Bearer ck_your_64_character_key
+        Obtained from /api/client/api-keys endpoint.
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        fullname:
+          type: string
+          example: "John Smith"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        role:
+          type: string
+          enum: [client, supplier]
+          example: "client"
+        company:
+          type: string
+          example: "Green Energy Solutions"
+        is_verified:
+          type: boolean
+          example: true
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+
+    Lead:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        email:
+          type: string
+          format: email
+          example: "customer@example.com"
+        phone:
+          type: string
+          example: "+33123456789"
+        address:
+          type: string
+          example: "123 Main St, Paris, 75001, France"
+        type:
+          type: string
+          enum: [solar_panel, insulation, ev_charger, insurance]
+          example: "solar_panel"
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 85
+        client_status:
+          type: string
+          enum: [contacted, sold, invalid, duplicate, low_quality, not_interested, rejected, pending]
+          nullable: true
+          example: "contacted"
+        created_at:
+          type: string
+          format: date-time
+        client_updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        upload_id:
+          type: integer
+          example: 123
+        other_fields:
+          type: object
+          description: Additional lead data
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        key_name:
+          type: string
+          example: "Production Upload Key"
+        key_prefix:
+          type: string
+          example: "sk_a1b2c3d4"
+        is_active:
+          type: boolean
+          example: true
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_used_ip:
+          type: string
+          nullable: true
+          example: "192.168.1.100"
+        usage_count:
+          type: integer
+          example: 156
+        created_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+        revoke_reason:
+          type: string
+          nullable: true
+
+    Upload:
+      type: object
+      properties:
+        upload_id:
+          type: string
+          example: "123"
+        client_id:
+          type: string
+          example: "456"
+        client_name:
+          type: string
+          example: "John Smith"
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+          example: "completed"
+        uploaded_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        total_leads:
+          type: integer
+          example: 150
+        processed_leads:
+          type: integer
+          example: 150
+        valid_leads:
+          type: integer
+          example: 120
+        error_message:
+          type: string
+          nullable: true
+        threshold:
+          type: integer
+          example: 75
+
+    ClientSettings:
+      type: object
+      properties:
+        min_lead_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 75
+        auto_accept_leads:
+          type: boolean
+          example: true
+        notification_email:
+          type: boolean
+          example: true
+        client_name:
+          type: string
+          example: "John Smith"
+        client_email:
+          type: string
+          example: "john@example.com"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message"
+        error:
+          type: string
+          example: "ERROR_CODE"
+
+    Pagination:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        total_pages:
+          type: integer
+          example: 5
+        total_results:
+          type: integer
+          example: 245
+        per_page:
+          type: integer
+          example: 50
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Supplier API Keys
+    description: API key management for suppliers
+  - name: Client API Keys
+    description: API key management for clients
+  - name: Lead Upload
+    description: Lead file upload and processing
+  - name: Lead Management
+    description: Lead data retrieval and status management for suppliers
+  - name: Client Management
+    description: Client settings, lead access, and status updates
+  - name: System
+    description: Health checks and system information
+
+paths:
+  # Authentication Endpoints
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullname, email, password, role]
+              properties:
+                fullname:
+                  type: string
+                  example: "John Smith"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  example: "SecurePass123!"
+                company:
+                  type: string
+                  example: "Green Energy Solutions"
+                role:
+                  type: string
+                  enum: [client, supplier]
+                  example: "client"
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Invalid input or email already in use
+
+  /api/auth/verify-email:
+    post:
+      tags: [Authentication]
+      summary: Verify email with verification code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                code:
+                  type: string
+                  example: "123456"
+      responses:
+        '200':
+          description: Email verified successfully
+        '400':
+          description: Invalid or expired verification code
+
+  /api/auth/resend-verification:
+    post:
+      tags: [Authentication]
+      summary: Resend verification email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+      responses:
+        '200':
+          description: Verification email resent successfully
+
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  example: "SecurePass123!"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user:
+                    $ref: '#/components/schemas/User'
+                  tokens:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+        '401':
+          description: Invalid credentials
+
+  /api/auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+        '401':
+          description: Invalid refresh token
+
+  /api/auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout user
+      responses:
+        '200':
+          description: Logged out successfully
+
+  /api/auth/reset-request:
+    post:
+      tags: [Authentication]
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Password reset instructions sent
+
+  /api/auth/reset-password:
+    post:
+      tags: [Authentication]
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Password reset successful
+
+  /api/auth/google:
+    post:
+      tags: [Authentication]
+      summary: Authenticate with Google
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken]
+              properties:
+                idToken:
+                  type: string
+      responses:
+        '200':
+          description: Google authentication successful
+        '401':
+          description: Invalid Google token
+
+  /api/auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current user information
+      security:
+        - supplierBearerToken: []
+        - clientBearerToken: []
+      responses:
+        '200':
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  # Supplier API Keys
+  /api/api-keys:
+    get:
+      tags: [Supplier API Keys]
+      summary: Get all API keys for the current supplier
+      security:
+        - supplierBearerToken: []
+      responses:
+        '200':
+          description: API keys retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApiKey'
+
+    post:
+      tags: [Supplier API Keys]
+      summary: Create a new supplier API key
+      security:
+        - supplierBearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key_name]
+              properties:
+                key_name:
+                  type: string
+                  example: "Production Upload Key"
+      responses:
+        '201':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      key_name:
+                        type: string
+                        example: "Production Upload Key"
+                      api_key:
+                        type: string
+                        example: "sk_a1b2c3d4e5f6g7h8..."
+                        description: "Full API key - ONLY SHOWN ONCE!"
+                      key_prefix:
+                        type: string
+                        example: "sk_a1b2c3d4"
+                  warning:
+                    type: string
+                    example: "Store this API key securely. It will not be shown again!"
+
+  /api/api-keys/{keyId}/revoke:
+    put:
+      tags: [Supplier API Keys]
+      summary: Revoke a supplier API key
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  example: "Key potentially compromised"
+      responses:
+        '200':
+          description: API key revoked successfully
+
+  /api/api-keys/{keyId}/reactivate:
+    put:
+      tags: [Supplier API Keys]
+      summary: Reactivate a revoked supplier API key
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: API key reactivated successfully
+
+  /api/api-keys/{keyId}:
+    delete:
+      tags: [Supplier API Keys]
+      summary: Delete a supplier API key permanently
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: API key deleted successfully
+
+  # Client API Keys
+  /api/client/api-keys:
+    get:
+      tags: [Client API Keys]
+      summary: Get all API keys for the current client
+      security:
+        - clientBearerToken: []
+      responses:
+        '200':
+          description: API keys retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApiKey'
+
+    post:
+      tags: [Client API Keys]
+      summary: Create a new client API key
+      security:
+        - clientBearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key_name]
+              properties:
+                key_name:
+                  type: string
+                  example: "CRM Integration Key"
+      responses:
+        '201':
+          description: API key created successfully
+
+  /api/client/api-keys/{keyId}/revoke:
+    put:
+      tags: [Client API Keys]
+      summary: Revoke a client API key
+      security:
+        - clientBearerToken: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: API key revoked successfully
+
+  /api/client/api-keys/{keyId}/reactivate:
+    put:
+      tags: [Client API Keys]
+      summary: Reactivate a revoked client API key
+      security:
+        - clientBearerToken: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: API key reactivated successfully
+
+  /api/client/api-keys/{keyId}:
+    delete:
+      tags: [Client API Keys]
+      summary: Delete a client API key permanently
+      security:
+        - clientBearerToken: []
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: API key deleted successfully
+
+  # Lead Upload
+  /api/leads/upload:
+    post:
+      tags: [Lead Upload]
+      summary: Upload JSON file containing leads for validation
+      description: |
+        Upload a JSON file containing leads for validation and certification.
+        The file is uploaded to storage and queued for background processing.
+
+        **AUTHENTICATION**: This endpoint uses supplier API key authentication.
+
+        **Lead Scoring System (0-100 points):**
+        - All required fields present: +20 points
+        - Valid phone format: +30 points
+        - Not a duplicate (within 30 days): +20 points
+        - Passes type-specific validation: +30 points
+      security:
+        - supplierApiKey: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, client_id]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JSON file containing leads data
+                client_id:
+                  type: string
+                  description: Target client ID
+                  example: "123"
+      responses:
+        '202':
+          description: File uploaded successfully and queued for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Upload received and queued"
+                  data:
+                    type: object
+                    properties:
+                      upload_id:
+                        type: string
+                        example: "12345"
+                      status:
+                        type: string
+                        example: "queued"
+                      client_name:
+                        type: string
+                        example: "John Smith"
+                      total_leads:
+                        type: integer
+                        example: 150
+        '400':
+          description: Bad request - Invalid file or missing fields
+        '401':
+          description: Unauthorized - Invalid or missing API key
+        '413':
+          description: File too large
+        '415':
+          description: Unsupported media type
+        '429':
+          description: Rate limit exceeded
+
+  # Lead Management (Supplier)
+  /api/leads/uploads:
+    get:
+      tags: [Lead Management]
+      summary: Get all uploads for the current supplier
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [queued, processing, completed, failed]
+      responses:
+        '200':
+          description: Uploads retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      uploads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Upload'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /api/leads/status/{uploadId}:
+    get:
+      tags: [Lead Management]
+      summary: Get upload processing status
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Processing status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Upload'
+        '404':
+          description: Upload not found or access denied
+
+  /api/leads/results/{uploadId}:
+    get:
+      tags: [Lead Management]
+      summary: Get detailed processing results
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [valid, invalid, duplicate, below_threshold]
+      responses:
+        '200':
+          description: Processing results retrieved successfully
+        '400':
+          description: Processing not yet completed
+        '404':
+          description: Upload not found or access denied
+
+  /api/leads/download/{uploadId}:
+    get:
+      tags: [Lead Management]
+      summary: Download original uploaded file
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File downloaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Upload not found or access denied
+
+  /api/leads/download-results/{uploadId}:
+    get:
+      tags: [Lead Management]
+      summary: Download processed leads results
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [valid, invalid, duplicate, below_threshold]
+      responses:
+        '200':
+          description: Results downloaded successfully
+        '400':
+          description: Processing not yet completed
+        '404':
+          description: Upload not found or access denied
+
+  /api/leads/supplier-stats:
+    get:
+      tags: [Lead Management]
+      summary: Get supplier performance statistics
+      security:
+        - supplierBearerToken: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+
+  # Client Management
+  /api/client/settings:
+    get:
+      tags: [Client Management]
+      summary: Get client's lead threshold and preferences
+      description: "AUTHENTICATION: Supports both JWT tokens and API keys."
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      responses:
+        '200':
+          description: Client settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ClientSettings'
+
+    put:
+      tags: [Client Management]
+      summary: Update client's lead threshold and preferences
+      description: "AUTHENTICATION: Supports both JWT tokens and API keys."
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                min_lead_score:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                auto_accept_leads:
+                  type: boolean
+                notification_email:
+                  type: boolean
+      responses:
+        '200':
+          description: Settings updated successfully
+
+  /api/client/leads:
+    get:
+      tags: [Client Management]
+      summary: Get leads for the client
+      description: |
+        Retrieve leads that have been sent to this client.
+        AUTHENTICATION: Supports both JWT tokens and API keys.
+        RATE LIMITING: API key requests are limited to 300 requests per minute.
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, above_threshold, below_threshold, contacted, sold, invalid, duplicate, pending]
+            default: all
+        - name: supplier_id
+          in: query
+          schema:
+            type: integer
+        - name: upload_id
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [solar_panel, insulation, ev_charger, insurance]
+        - name: min_score
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Leads retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      leads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Lead'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '429':
+          description: Rate limit exceeded (API key users only)
+
+  /api/client/lead-status:
+    put:
+      tags: [Client Management]
+      summary: Update lead status
+      description: "AUTHENTICATION: Supports both JWT tokens and API keys."
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lead_id, status]
+              properties:
+                lead_id:
+                  type: integer
+                  example: 12345
+                status:
+                  type: string
+                  enum: [contacted, sold, invalid, duplicate, low_quality, not_interested, rejected, pending]
+                  example: "contacted"
+      responses:
+        '200':
+          description: Lead status updated successfully
+        '404':
+          description: Lead not found or doesn't belong to this client
+
+  /api/client/lead-status/bulk:
+    put:
+      tags: [Client Management]
+      summary: Update multiple lead statuses
+      description: "AUTHENTICATION: Supports both JWT tokens and API keys."
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lead_ids, status]
+              properties:
+                lead_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: [12345, 12346, 12347]
+                status:
+                  type: string
+                  enum: [contacted, sold, invalid, duplicate, low_quality, not_interested, rejected, pending]
+      responses:
+        '200':
+          description: Lead statuses updated successfully
+
+  /api/client/lead-status-summary:
+    get:
+      tags: [Client Management]
+      summary: Get lead status summary for client
+      description: "AUTHENTICATION: Supports both JWT tokens and API keys."
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+        - name: supplier_id
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [solar_panel, insulation, ev_charger, insurance]
+      responses:
+        '200':
+          description: Status summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      total_leads:
+                        type: integer
+                        example: 150
+                      above_threshold:
+                        type: integer
+                        example: 120
+                      below_threshold:
+                        type: integer
+                        example: 15
+                      duplicates:
+                        type: integer
+                        example: 10
+                      invalid:
+                        type: integer
+                        example: 5
+                      status_breakdown:
+                        type: object
+                        properties:
+                          pending:
+                            type: integer
+                            example: 45
+                          contacted:
+                            type: integer
+                            example: 60
+                          sold:
+                            type: integer
+                            example: 15
+                          invalid:
+                            type: integer
+                            example: 12
+                          duplicate:
+                            type: integer
+                            example: 8
+                          low_quality:
+                            type: integer
+                            example: 5
+                          not_interested:
+                            type: integer
+                            example: 3
+                          rejected:
+                            type: integer
+                            example: 2
+                      conversion_rate:
+                        type: number
+                        example: 10.0
+                      period_days:
+                        type: integer
+                        example: 30
+
+  /api/client/stats:
+    get:
+      tags: [Client Management]
+      summary: Get client statistics and threshold analysis
+      description: "AUTHENTICATION: Supports both JWT tokens and API keys."
+      security:
+        - clientBearerToken: []
+        - clientApiKey: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      current_threshold:
+                        type: integer
+                        example: 75
+                      total_uploads:
+                        type: integer
+                        example: 25
+                      unique_suppliers:
+                        type: integer
+                        example: 5
+                      total_leads_received:
+                        type: integer
+                        example: 2500
+                      leads_above_threshold:
+                        type: integer
+                        example: 2100
+                      average_lead_score:
+                        type: number
+                        example: 78.5
+                      period_days:
+                        type: integer
+                        example: 30
+
+  # System Endpoints
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Check if the API server is running
+      responses:
+        '200':
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Server is running"
+                  environment:
+                    type: string
+                    example: "development"
+
+  /api-docs:
+    get:
+      tags: [System]
+      summary: API Documentation
+      description: Access the interactive Swagger UI documentation
+      responses:
+        '200':
+          description: Swagger UI documentation page
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api-docs.json:
+    get:
+      tags: [System]
+      summary: Get API specification in JSON format
+      responses:
+        '200':
+          description: OpenAPI specification in JSON format
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api-docs.yaml:
+    get:
+      tags: [System]
+      summary: Get API specification in YAML format
+      responses:
+        '200':
+          description: OpenAPI specification in YAML format
+          content:
+            text/yaml:
+              schema:
+                type: string
