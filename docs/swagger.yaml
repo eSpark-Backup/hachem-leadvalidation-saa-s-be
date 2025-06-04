@@ -26,7 +26,7 @@ info:
 servers:
   - url: /
     description: local server
-  - url: https://hachem-be-stg.esparkconsultants.com
+  - url: https://hachem-be-stg.juniordev.net
     description: hosted staging server
 
 components:
