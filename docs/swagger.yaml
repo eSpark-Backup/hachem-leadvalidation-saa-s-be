@@ -369,7 +369,7 @@ paths:
   /api/auth/login:
     post:
       tags: [Authentication]
-      summary: Login with email and password
+      summary: Login with email and password, use supplier email (sarah.johnson@leadgen.com) or client email (john.smith@greenenergy.com)
       requestBody:
         required: true
         content:
@@ -381,7 +381,7 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: "john@example.com"
+                  example: "sarah.johnson@leadgen.com"
                 password:
                   type: string
                   example: "SecurePass123!"
