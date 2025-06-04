@@ -93,12 +93,15 @@ jobs:
           scp -o StrictHostKeyChecking=no -i key.pem tag.txt github-actions@54.234.173.111:/home/github-actions/ 
           ssh -o StrictHostKeyChecking=no -i key.pem github-actions@54.234.173.111 << 'EOF'
           sed -i 's/^IMAGE_TAG=//' tag.txt
+          export AWS_ACCESS_KEY_ID=AKIAXW5OGZH2ACFVO75S
+          export AWS_SECRET_ACCESS_KEY=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
+          export AWS_DEFAULT_REGION=us-east-1
           /usr/local/bin/aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 530256939508.dkr.ecr.us-east-1.amazonaws.com
           ls -la
           cat tag.txt 
-          TAG=$(sudo cat tag.txt)
-          cd /var/www/vhosts/hachem 
-          sudo IMAGE_TAG=$TAG docker compose up -d
+          TAG=$(cat tag.txt)
+          cd /var/www/vhosts/hachem && 
+          sudo IMAGE_TAG=$TAG docker compose up --build -d nodejs
           EOF
 
 
