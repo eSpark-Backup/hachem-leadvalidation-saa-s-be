@@ -96,8 +96,8 @@ jobs:
           /usr/local/bin/aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 530256939508.dkr.ecr.us-east-1.amazonaws.com
           ls -la
           cat tag.txt 
-          TAG=$(sudo cat tag.txt)
-          cd /var/www/vhosts/hachem 
+          TAG=$(cat tag.txt)
+          cd /var/www/vhosts/hachem && 
           sudo IMAGE_TAG=$TAG docker compose up -d
           EOF
 
