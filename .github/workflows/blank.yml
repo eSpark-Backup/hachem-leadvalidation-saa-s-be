@@ -101,7 +101,7 @@ jobs:
           cat tag.txt 
           TAG=$(cat tag.txt)
           cd /var/www/vhosts/hachem && 
-          sudo IMAGE_TAG=stg-803ea docker compose up --build -d nodejs
+          sudo IMAGE_TAG=$TAG docker compose up --build -d nodejs
           EOF
 
 
